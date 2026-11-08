@@ -1,135 +1,160 @@
 """
-AUTOENCODER (10 min)
+AUTOENCODER - CARD FRAUD (10 min)
 
-An autoencoder has a narrow middle, called the bottleneck.
-The encoder squashes the input into a few numbers.
-The decoder rebuilds the input from only those numbers.
-The loss is "how far is the rebuild from the original?" No labels.
+A card issuer does not have a label for every stolen card. It trains on
+ordinary swipes only. Each swipe is 4 numbers:
 
-BERT's fill-in-the-blank (08) is this with one change: some characters
-are erased before the encoder sees them, and the loss is still against
-the original. That version is called a denoising autoencoder.
+  amount in dollars, hour of the day, miles from home, swipes in the last hour.
 
-Five short sentences, so this can actually learn in about a second.
-The bottleneck has 4 numbers. The sentence is longer than that, so the
-model has to keep what matters and drop the rest.
+Ordinary swipes here happen between 8am and 8pm, within 12 miles of home,
+with 1 or 2 swipes an hour. The amount mostly follows how far the trip was.
+
+The encoder squeezes the 4 numbers into 2. The decoder rebuilds the swipe
+from only those 2. The loss is "how far is the rebuild from the original?"
+
+An ordinary swipe fits, so the error stays tiny. A stolen-card swipe does
+not fit in those 2 numbers, so it comes back looking ordinary and the error
+jumps. That jump is the alert. No fraud labels were used.
 
 Run:  python 12_autoencoder.py
 """
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-phrases = [
-    "to be or not to be",
-    "the bank by the river",
-    "the bank holds money",
-    "a man plays guitar",
-    "a dog sleeps outside",
+g = torch.Generator().manual_seed(0)
+N = 4000
+hour = 8 + 12 * torch.rand(N, generator=g)                 # 8am to 8pm
+miles = 12 * torch.rand(N, generator=g)                    # within 12 miles
+recent = torch.randint(1, 3, (N,), generator=g).float()    # 1 or 2 swipes
+amount = 8 + 2.0 * miles + 0.35 * (hour - 8)               # bigger trip, bigger bill
+amount = (amount + torch.randn(N, generator=g) * 1.2).clamp(2, 80)
+raw = torch.stack([amount, hour, miles, recent], 1)
+held, train = raw[:3], raw[3:]
+
+# Never shown during training. The tags are for you, not for the model.
+frauds = [
+    ([2400, 3, 4, 1], "big charge at 3am"),
+    ([22, 14, 850, 1], "ordinary amount, another city"),
+    ([420, 2, 6, 1], "big charge at 2am"),
 ]
-L = max(len(p) for p in phrases)
-phrases = [p.ljust(L) for p in phrases]
-chars = sorted(set("".join(phrases)))
-MASK = len(chars)                       # extra id, used only on the way in
-stoi = {c: i for i, c in enumerate(chars)}
-itos = {i: c for c, i in stoi.items()}
-itos[MASK] = "_"
+fraud_x = torch.tensor([row for row, _ in frauds], dtype=torch.float)
 
-def ids(s):
-    return torch.tensor([stoi[c] for c in s])
+# Dollars and miles are different sizes. Measure each column as
+# "how many normal-swipes away from average" so all four count.
+mu, sd = train.mean(0), train.std(0)
 
-clean = torch.stack([ids(p) for p in phrases])   # (5, L)
 
-LATENT = 4
+def norm(x):
+    return (x - mu) / sd
+
+
+LATENT = 2
 
 
 class AE(nn.Module):
     def __init__(self):
         super().__init__()
-        self.emb = nn.Embedding(len(chars) + 1, 32)
-        self.to_z = nn.Linear(L * 32, LATENT)          # encoder: wide -> 4 numbers
-        self.from_z = nn.Linear(LATENT, L * len(chars))  # decoder: 4 numbers -> a char per position
+        self.enc = nn.Sequential(nn.Linear(4, 16), nn.ReLU(), nn.Linear(16, LATENT))
+        self.dec = nn.Sequential(nn.Linear(LATENT, 16), nn.ReLU(), nn.Linear(16, 4))
 
     def forward(self, x):
-        z = self.to_z(self.emb(x).flatten(1))              # 4 numbers, no other constraint
-        logits = self.from_z(z).view(x.shape[0], L, len(chars))
-        return z, logits
+        z = torch.tanh(self.enc(x))          # 2 numbers, kept between -1 and 1
+        return z, self.dec(z)
 
 
-def corrupt(x, p=0.3):
-    seen = x.clone()
-    seen[torch.rand(x.shape) < p] = MASK
-    return seen
+def clock(hour):
+    hour = float(hour) % 24
+    hh = int(hour)
+    mm = int(round((hour - hh) * 60))
+    if mm == 60:
+        hh = (hh + 1) % 24
+        mm = 0
+    suffix = "am" if hh < 12 else "pm"
+    return f"{hh % 12 or 12}:{mm:02d}{suffix}"
 
 
-def text(t):
-    return "".join(itos[i] for i in t.tolist())
+def describe(v):
+    n = float(v[3])
+    count = f"{n:.1f}".rstrip("0").rstrip(".")
+    word = "swipe" if abs(n - 1) < 0.05 else "swipes"
+    return (f"${v[0]:.0f} at {clock(v[1])}, "
+            f"{v[2]:.1f} miles from home, "
+            f"{count} {word} in the last hour")
 
+
+print("Ordinary swipes are made up here, not loaded from a file.")
+print("  hour     8am to 8pm")
+print("  miles    0 to 12 from home")
+print("  swipes   1 or 2 in the last hour")
+print("  amount   about $8 + $2 per mile, a bit more later in the day")
+print(f"\n{len(train)} of them are the training set. A few:")
+for row in train[:4]:
+    print(f"  {describe(row)}")
+print(f"\n{len(held)} more are the same kind of swipe, kept out of training.")
+print("The fraud rows below are not in this set, and the model is never told they are bad.")
 
 torch.manual_seed(0)
 ae = AE()
 opt = torch.optim.Adam(ae.parameters(), lr=1e-2)
+tn = norm(train)
 
-print("step  loss     (same loop as step 3: forward, loss, backward, update)")
-for step in range(801):
-    x = clean[torch.randint(0, len(phrases), (64,))]
-    _, logits = ae(corrupt(x))
-    loss = F.cross_entropy(logits.reshape(-1, len(chars)), x.reshape(-1))
+print("\nTraining. Loss is how far a rebuild is from the swipe it just saw.")
+for step in range(2001):
+    batch = tn[torch.randint(0, len(tn), (256,))]
+    _, hat = ae(batch)
+    loss = ((hat - batch) ** 2).mean()
     opt.zero_grad()
     loss.backward()
     opt.step()
-    if step % 200 == 0:
+    if step % 500 == 0:
         print(f"{step:4d}  {loss.item():.3f}")
+
+
+def score(x):
+    """Rebuild error per swipe, after scaling. High means it did not fit."""
+    _, hat = ae(norm(x))
+    err = ((hat - norm(x)) ** 2).mean(1)
+    back = hat * sd + mu
+    return err, back
+
 
 ae.eval()
 with torch.no_grad():
-    # --- A. The encoder saw a damaged sentence. The decoder still aims at the original.
-    print("\nA. damaged input  ->  rebuild        original")
-    for row in clean:
-        seen = corrupt(row.unsqueeze(0), p=0.35)
-        _, logits = ae(seen)
-        pred = logits[0].argmax(-1)
-        print(f"   {text(seen[0]):22}  {text(pred):22}  {text(row)}")
+    train_err, _ = score(train)
+    cutoff = train_err.max().item() * 10
+    print(f"\nWorst ordinary training swipe scored {train_err.max().item():.2f}.")
+    print(f"Send a swipe to a person when its error is above {cutoff:.2f}.")
 
-    # --- B. The whole memory of a sentence is those 4 numbers.
-    print("\nB. the bottleneck, one row per sentence")
-    zs = []
-    for row, phrase in zip(clean, phrases):
-        z, logits = ae(row.unsqueeze(0))
-        zs.append(z[0])
-        pred = text(logits[0].argmax(-1))
-        nums = " ".join(f"{v:+.2f}" for v in z[0])
-        print(f"   [{nums}]  {pred}")
+    def show(title, rows, notes):
+        err, back = score(rows)
+        print(f"\n{title}")
+        for i in range(len(rows)):
+            call = "review" if err[i] > cutoff else "ok"
+            print(f"  {notes[i]}")
+            print(f"    swipe    {describe(rows[i])}")
+            print(f"    rebuilt  {describe(back[i])}")
+            print(f"    error {err[i].item():.2f}  ->  {call}")
 
-    def dist(i, j):
-        return (zs[i] - zs[j]).norm().item()
+    show("Ordinary swipes the model never trained on. These should come back almost unchanged.",
+         held, ["held out of training"] * len(held))
+    show("Swipes that break the habit. The model was not told these are bad.",
+         fraud_x, [note for _, note in frauds])
 
-    pairs = sorted(
-        ((dist(i, j), phrases[i].strip(), phrases[j].strip())
-         for i in range(len(phrases)) for j in range(i + 1, len(phrases))),
-    )
-    print(f"\n   closest  {pairs[0][0]:.2f}   {pairs[0][1]!r}  ~  {pairs[0][2]!r}")
-    print(f"   farthest {pairs[-1][0]:.2f}   {pairs[-1][1]!r}  ~  {pairs[-1][2]!r}")
-    print("   Distance is not meaning. The 4 numbers only have to be distinct")
-    print("   enough for the decoder to tell these five sentences apart.")
-
-    # --- C. A point halfway between two codes is still a sentence-shaped vector.
-    i, j = 1, 2  # the two "bank" sentences
-    mid = (zs[i] + zs[j]) / 2
-    blend = ae.from_z(mid).view(L, len(chars)).argmax(-1)
-    print(f"\nC. halfway between the two bank sentences:\n   {text(blend)!r}")
+print("\nThe three bad swipes come back as the same ordinary one:")
+print("about $68 around 3pm, about 30 miles out.")
+print("The decoder cannot write $2400, 3am, or a trip to another city.")
+print("The error is the gap between the swipe and that rebuild.")
 
 """
 TRY THIS
-1. Set LATENT = 2, then LATENT = 16, and rerun. Watch section A.
-   Too narrow and the rebuild starts dropping letters. Wider is an easier copy.
-2. In corrupt(), change 0.3 to 0.0. The model only ever sees clean input.
-   Section A should get worse: it never practiced filling holes.
-3. In section C, average a bank sentence with 'a dog sleeps outside'.
-   The blend is usually not a real sentence. The space between codes
-   was never trained, only the codes themselves.
+1. Add [28, 13, 5, 1] to the fraud list. It is an ordinary afternoon swipe,
+   so it should stay under the cutoff.
+2. Change the 2400 / 3am swipe to [28, 13, 4, 1]. The alert should go away.
+3. Remove the torch.tanh around the code and rerun. The 2400 row should
+   still go to review, but the rebuilt amount, hour, and miles can come out
+   impossible. tanh is what keeps the rebuild near an ordinary swipe.
 
-TAKEAWAY: encoder squeezes, decoder rebuilds, loss compares to the input.
-Hide part of the input first and you have BERT's training game.
-The squeezed vector is the same kind of object you measured in 09 and 10.
+TAKEAWAY: train on ordinary swipes only. The squeeze learns that habit.
+Small rebuild error = same habit. Large rebuild error = send it to a person.
+No fraud labels were used.
 """

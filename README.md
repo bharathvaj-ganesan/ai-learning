@@ -35,7 +35,7 @@ Add a package with `poetry add <name>` (updates `pyproject.toml` and `poetry.loc
 | bonus | BERT 3 | `09_bert_word_meaning.py` | Same word, different sentence, different vector |
 | bonus | BERT 4 | `10_bert_similarity.py` | One vector per sentence, compared by angle |
 | bonus | BERT 5 | `11_bert_next_sentence.py` | Did sentence B really follow sentence A? |
-| bonus | Autoencoder | `12_autoencoder.py` | Squeeze a sentence through a bottleneck, then rebuild it |
+| bonus | Autoencoder | `12_autoencoder.py` | Train on ordinary card swipes, flag a swipe that will not rebuild |
 
 Illustrations: run `python make_illustrations.py` -> PNGs land in `illustrations/`.
 Look at them when a step says **[look]**.
