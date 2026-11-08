@@ -30,7 +30,12 @@ Add a package with `poetry add <name>` (updates `pyproject.toml` and `poetry.loc
 | 1:20-1:45 | 5. Mini-GPT | `05_mini_gpt.py` | Full transformer, trained on Shakespeare, on your laptop |
 | 1:45-1:55 | 6. Real model | `06_real_gpt2.py` | Same thing, 124M params. Sampling knobs. |
 | 1:55-2:00 | 7. Teach-back | `TEACH_BACK.md` | Explain it in 5 minutes |
-| bonus | 7. BERT playground | `07_bert_playground.py` | The other family: encoder-only, bidirectional. Fill-in-the-blank, contextual embeddings, sentence similarity. |
+| bonus | BERT 1 | `07_bert_tokens.py` | `[CLS]` `[SEP]` `[MASK]`, and how words get split |
+| bonus | BERT 2 | `08_bert_fill_mask.py` | Guess a hidden word from both sides |
+| bonus | BERT 3 | `09_bert_word_meaning.py` | Same word, different sentence, different vector |
+| bonus | BERT 4 | `10_bert_similarity.py` | One vector per sentence, compared by angle |
+| bonus | BERT 5 | `11_bert_next_sentence.py` | Did sentence B really follow sentence A? |
+| bonus | Autoencoder | `12_autoencoder.py` | Squeeze a sentence through a bottleneck, then rebuild it |
 
 Illustrations: run `python make_illustrations.py` -> PNGs land in `illustrations/`.
 Look at them when a step says **[look]**.
