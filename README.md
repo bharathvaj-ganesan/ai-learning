@@ -10,11 +10,13 @@ one-liners inside the scripts.
 
 ```bash
 cd /Users/bharathvajganesan/personal/ai/learn-llms
-python3 -m venv .venv            # already created for you
-source .venv/bin/activate
-pip install torch numpy matplotlib transformers
+poetry install                   # creates .venv/ in this folder from poetry.lock
+eval $(poetry env activate)      # activate it; every `python XX.py` below now just works
 python 00_check.py
 ```
+
+Without activating, prefix any command with `poetry run`, e.g. `poetry run python 06_real_gpt2.py`.
+Add a package with `poetry add <name>` (updates `pyproject.toml` and `poetry.lock`).
 
 ## The 2-hour schedule
 
@@ -28,6 +30,7 @@ python 00_check.py
 | 1:20-1:45 | 5. Mini-GPT | `05_mini_gpt.py` | Full transformer, trained on Shakespeare, on your laptop |
 | 1:45-1:55 | 6. Real model | `06_real_gpt2.py` | Same thing, 124M params. Sampling knobs. |
 | 1:55-2:00 | 7. Teach-back | `TEACH_BACK.md` | Explain it in 5 minutes |
+| bonus | 7. BERT playground | `07_bert_playground.py` | The other family: encoder-only, bidirectional. Fill-in-the-blank, contextual embeddings, sentence similarity. |
 
 Illustrations: run `python make_illustrations.py` -> PNGs land in `illustrations/`.
 Look at them when a step says **[look]**.
