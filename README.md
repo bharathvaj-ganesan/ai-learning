@@ -36,8 +36,13 @@ Add a package with `poetry add <name>` (updates `pyproject.toml` and `poetry.loc
 | bonus | BERT 4 | `3_bert/10_bert_similarity.py` | One vector per sentence, compared by angle |
 | bonus | BERT 5 | `3_bert/11_bert_next_sentence.py` | Did sentence B really follow sentence A? |
 | bonus | Autoencoder | `4_applications/12_autoencoder.py` | Train on ordinary card swipes, flag a swipe that will not rebuild |
+| bonus | Vector DB 1 | `5_vector_db/14_distances.py` | Dot, cosine, L2, and why normalizing makes them agree |
+| bonus | Vector DB 2 | `5_vector_db/15_flat_search.py` | Exact top-k, metadata filters, save/load, linear-time scan (uses `flat_index.py`) |
+| bonus | Vector DB 3 | `5_vector_db/16_ivf_search.py` | k-means buckets, `nprobe`, the speed vs recall trade-off (uses `ivf_index.py`) |
+| bonus | Vector DB 4 | `5_vector_db/17_text_search.py` | BERT embeddings plus the index = semantic search |
 
 Illustrations: run `python make_illustrations.py` -> PNGs land in `illustrations/`.
+Vector DB pictures (`vdb_1_distances.png` ... `vdb_4_text_search.png`): `python 5_vector_db/make_vdb_illustrations.py`.
 Look at them when a step says **[look]**.
 
 ## How to work each step
