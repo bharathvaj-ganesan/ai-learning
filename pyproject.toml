@@ -9,6 +9,7 @@ dependencies = [
     "numpy (>=2.5.4,<3.0.0)",
     "matplotlib (>=3.11.2,<4.0.0)",
     "transformers (>=5.22.2,<6.0.0)",
+    "openai (>=3.46.0,<4.0.0)",
 ]
 
 [tool.poetry]
