@@ -10,8 +10,8 @@ Three tokens are special:
 
 Rare words are split into pieces. A piece that continues a word starts with ##.
 
-Run:  python 07_bert_tokens.py
-Next: python 08_bert_fill_mask.py
+Run:  python 3_bert/07_bert_tokens.py
+Next: python 3_bert/08_bert_fill_mask.py
 """
 import sys
 from transformers import AutoTokenizer

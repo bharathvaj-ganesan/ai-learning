@@ -16,7 +16,7 @@ An ordinary swipe fits, so the error stays tiny. A stolen-card swipe does
 not fit in those 2 numbers, so it comes back looking ordinary and the error
 jumps. That jump is the alert. No fraud labels were used.
 
-Run:  python 12_autoencoder.py
+Run:  python 4_applications/12_autoencoder.py
 """
 import torch
 import torch.nn as nn

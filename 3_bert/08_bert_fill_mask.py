@@ -5,8 +5,8 @@ BERT's first training game: hide a word, guess it from BOTH sides.
 GPT-2 only gets the words on the left. The right-hand words are why
 'bank' by a river and 'bank' for money come out as different guesses.
 
-Run:  python 08_bert_fill_mask.py
-Next: python 09_bert_word_meaning.py
+Run:  python 3_bert/08_bert_fill_mask.py
+Next: python 3_bert/09_bert_word_meaning.py
 """
 import os
 os.environ["TQDM_DISABLE"] = "1"  # the weight-loading bar is not part of the lesson

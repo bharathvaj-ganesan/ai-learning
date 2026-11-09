@@ -9,7 +9,7 @@ Pipeline for one step:
    token id -> embedding row (vector of numbers) -> logits (raw scores) ->
    softmax (probabilities) -> cross-entropy loss -> backward() -> nudge weights
 
-Run:  python 03_neural_bigram.py   (needs input.txt from step 2)
+Run:  python 1_foundations/03_neural_bigram.py   (needs input.txt from step 2)
 """
 import torch
 import torch.nn.functional as F

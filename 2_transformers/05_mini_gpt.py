@@ -11,7 +11,7 @@ Architecture (same as GPT-2/3/4, just smaller):
    - residual (x + f(x)): lets gradients flow, each block only has to learn a small *edit*.
    - MLP: per-token thinking; attention = communication between tokens, MLP = computation.
 
-Run:  python 05_mini_gpt.py          (~1 min on Apple-silicon GPU, longer on CPU; prints loss + samples)
+Run:  python 2_transformers/05_mini_gpt.py          (~1 min on Apple-silicon GPU, longer on CPU; prints loss + samples)
 Then set max_iters = 10000 and run again (~4 min): same code, visibly better Shakespeare.
 Watch the samples go: gibberish -> real-looking words -> Shakespeare-ish lines.
 """

@@ -7,7 +7,7 @@ GPT-2 small (124M params) has the SAME architecture as your mini-GPT. Here we:
   C. play with the sampling knobs (temperature, top-k)
   D. count parameters per component
 
-Run:  python 06_real_gpt2.py    (downloads ~500MB once)
+Run:  python 2_transformers/06_real_gpt2.py    (downloads ~500MB once)
 """
 import torch, torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM

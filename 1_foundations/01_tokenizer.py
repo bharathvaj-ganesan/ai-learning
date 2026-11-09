@@ -5,7 +5,7 @@ Idea: a neural network only does math on numbers. So text -> list of integers ("
 Real LLMs use BPE (byte-pair encoding): start with characters, repeatedly merge the most
 frequent adjacent pair into a new token. We build that in ~20 lines.
 
-Run:  python 01_tokenizer.py
+Run:  python 1_foundations/01_tokenizer.py
 """
 from collections import Counter
 

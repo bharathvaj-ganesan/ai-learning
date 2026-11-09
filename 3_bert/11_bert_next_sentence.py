@@ -7,8 +7,8 @@ really come next in the document, or was it a random sentence?
 The input is [CLS] A [SEP] B [SEP]. A small head on top of [CLS]
 outputs two scores. Index 0 is "B follows A".
 
-Run:  python 11_bert_next_sentence.py
-Next: python 12_autoencoder.py
+Run:  python 3_bert/11_bert_next_sentence.py
+Next: python 4_applications/12_autoencoder.py
 """
 import os
 os.environ["TQDM_DISABLE"] = "1"

@@ -8,8 +8,8 @@ for every token, computed from the whole sentence.
 Same spelling, different sentence -> different vector.
 Cosine similarity compares two vectors. 1.0 = same direction, 0 = unrelated.
 
-Run:  python 09_bert_word_meaning.py
-Next: python 10_bert_similarity.py
+Run:  python 3_bert/09_bert_word_meaning.py
+Next: python 3_bert/10_bert_similarity.py
 """
 import os
 os.environ["TQDM_DISABLE"] = "1"

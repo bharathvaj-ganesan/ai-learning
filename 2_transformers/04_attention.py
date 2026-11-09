@@ -11,7 +11,7 @@ Mechanism (database-lookup analogy):
    score = query . key  -> softmax -> weights -> weighted average of values.
    Causal mask: a token may NOT look at the future (otherwise it would cheat at next-token prediction).
 
-Run:  python 04_attention.py   -> also saves illustrations/attention_weights.png
+Run:  python 2_transformers/04_attention.py   -> also saves illustrations/attention_weights.png
 """
 import os, torch, torch.nn.functional as F
 torch.manual_seed(0)

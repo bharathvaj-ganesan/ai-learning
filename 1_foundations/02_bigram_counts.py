@@ -5,7 +5,7 @@ A language model = a function: (previous tokens) -> probability of every possibl
 Here: look at ONLY the previous character, and count what followed it in the training text.
 No neural net, no ML. Just a table.
 
-Run:  python 02_bigram_counts.py
+Run:  python 1_foundations/02_bigram_counts.py
 """
 import urllib.request, os, random
 import torch

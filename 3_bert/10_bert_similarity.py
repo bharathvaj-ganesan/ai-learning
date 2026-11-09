@@ -9,8 +9,8 @@ This is the idea behind semantic search. Raw BERT is only mediocre at it:
 it was trained to fill blanks, not to compare sentences. Sentence-BERT is
 the same idea after training on sentence pairs, and that is what retrieval uses.
 
-Run:  python 10_bert_similarity.py
-Next: python 11_bert_next_sentence.py
+Run:  python 3_bert/10_bert_similarity.py
+Next: python 3_bert/11_bert_next_sentence.py
 """
 import os
 os.environ["TQDM_DISABLE"] = "1"
